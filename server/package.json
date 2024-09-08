@@ -1,0 +1,23 @@
+{
+  "name": "spectrum-server",
+  "private": true,
+  "dependencies": {
+    "express": "4.19.2",
+    "ws": "8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "29.5.12",
+    "@types/ws": "^8.5.12",
+    "jest": "29.7.0",
+    "prettier-airbnb-config": "1.0.0",
+    "ts-jest": "29.2.5",
+    "typescript": "5.5.4"
+  },
+  "scripts": {
+    "start": "npm run build && npm run start:nobuild",
+    "start:nobuild": "node lib/server.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "jest"
+  }
+}
