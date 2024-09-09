@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "express": "4.19.2",
+    "spectrum-common": "file:../common",
     "ws": "8.18.0"
   },
   "devDependencies": {

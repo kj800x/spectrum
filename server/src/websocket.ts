@@ -1,5 +1,5 @@
 import ws from 'ws';
-import { isClientMessage } from './protocol';
+import { isClientMessage } from 'spectrum-common/protocol';
 import LobbyManager, { Player } from './game';
 
 export const wss = new ws.Server({ noServer: true });
