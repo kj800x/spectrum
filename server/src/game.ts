@@ -1,4 +1,5 @@
 import ws from 'ws';
+import { ClientGameState, ClientPlayer, ClientSpectrum, ServerSync } from './protocol';
 
 const SPECTRUMS = [
   ["cold", "hot"],
@@ -52,52 +53,51 @@ type GameState =
   | { state: 'round-completed'; spectrums: Spectrum[]; current: Spectrum }
   | { state: 'results'; spectrums: Spectrum[] };
 
-function asClientSafeSpectrum(spectrum: Spectrum, currentPlayer: Player): Spectrum {
+function asClientSpectrum(spectrum: Spectrum, currentPlayer: Player): ClientSpectrum {
   // The assigned player can always see all attributes of the spectrum until the value is submitted
   if (currentPlayer === spectrum.assigned || spectrum.submittedValue != null) {
-    return {...spectrum, assigned: asClientSafePlayer(spectrum.assigned, currentPlayer)};
+    return {...spectrum, assigned: asClientPlayer(spectrum.assigned, currentPlayer)};
   }
 
-  const result: Spectrum = {...spectrum, assigned: asClientSafePlayer(spectrum.assigned, currentPlayer)};
+  const result: ClientSpectrum = {...spectrum, assigned: asClientPlayer(spectrum.assigned, currentPlayer)};
   delete result.correctValue;
   return result;
 }
 
-function asClientSafePlayer(player: Player, _currentPlayer: Player): Player {
-   // FIXME: I'm actually hiding the connection here, so this isn't a real Player
+function asClientPlayer(player: Player, _currentPlayer: Player): ClientPlayer {
   return {
     id: player.id,
     name: player.name,
   } as Player;
 }
 
-function asClientSafeGameState(state: GameState, currentPlayer: Player): GameState {
+function asClientGameState(state: GameState, currentPlayer: Player): ClientGameState {
   switch (state.state) {
     case 'lobby':
       return state;
     case 'initializing':
       return {
         state: 'initializing',
-        spectrums: state.spectrums.map(spectrum => asClientSafeSpectrum(spectrum, currentPlayer)),
+        spectrums: state.spectrums.map(spectrum => asClientSpectrum(spectrum, currentPlayer)),
       };
     case 'round-playing':
       return {
         state: 'round-playing',
-        spectrums: state.spectrums.map(spectrum => asClientSafeSpectrum(spectrum, currentPlayer)),
-        current: asClientSafeSpectrum(state.current, currentPlayer),
-        ready: state.ready.map(player => asClientSafePlayer(player, currentPlayer)),
+        spectrums: state.spectrums.map(spectrum => asClientSpectrum(spectrum, currentPlayer)),
+        current: asClientSpectrum(state.current, currentPlayer),
+        ready: state.ready.map(player => asClientPlayer(player, currentPlayer)),
         proposedValue: state.proposedValue,
       };
     case 'round-completed':
       return {
         state: 'round-completed',
-        spectrums: state.spectrums.map(spectrum => asClientSafeSpectrum(spectrum, currentPlayer)),
-        current: asClientSafeSpectrum(state.current, currentPlayer),
+        spectrums: state.spectrums.map(spectrum => asClientSpectrum(spectrum, currentPlayer)),
+        current: asClientSpectrum(state.current, currentPlayer),
       };
     case 'results':
       return {
         state: 'results',
-        spectrums: state.spectrums.map(spectrum => asClientSafeSpectrum(spectrum, currentPlayer)),
+        spectrums: state.spectrums.map(spectrum => asClientSpectrum(spectrum, currentPlayer)),
       };
   }
 }
@@ -174,11 +174,13 @@ class Lobby {
       player.connection.send(
         JSON.stringify({
           type: 'sync',
-          you: asClientSafePlayer(player, player),
-          state: asClientSafeGameState(this.state, player),
-          players: this.players.map(p => asClientSafePlayer(p, player)),
-          code: this.code,
-        })
+          payload: {
+            you: asClientPlayer(player, player),
+            state: asClientGameState(this.state, player),
+            players: this.players.map(p => asClientPlayer(p, player)),
+            code: this.code,
+          },
+        } satisfies ServerSync)
       );
     });
   }

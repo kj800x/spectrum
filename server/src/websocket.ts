@@ -1,5 +1,5 @@
 import ws from 'ws';
-import { isClientMessage } from 'spectrum-common/protocol';
+import { isClientMessage } from './protocol';
 import LobbyManager, { Player } from './game';
 
 export const wss = new ws.Server({ noServer: true });
@@ -114,11 +114,3 @@ wss.on('connection', (connection: HydratedConnection) => {
     }
   });
 });
-
-export function broadcast(data: any) {
-  wss.clients.forEach(client => {
-    if (client.readyState === ws.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
-}

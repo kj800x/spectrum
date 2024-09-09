@@ -1,3 +1,6 @@
+// TODO: How can we make this stay in sync between `client` and `server`
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export function isCreateRoomMessage(message: any): message is CreateRoomMessage {
   return message.type === 'create-room' && typeof message.nickname === 'string';
 }
@@ -98,3 +101,56 @@ export type ClientMessage =
   | ReadyUpMessage
   | ClearReadyMessage
   | ProceedMessage;
+
+// From Server to Client
+
+export type ClientGameState =
+  | {
+      state: 'lobby';
+    }
+  | {
+      state: 'initializing';
+      spectrums: ClientSpectrum[];
+    }
+  | {
+      state: 'round-playing';
+      spectrums: ClientSpectrum[];
+      current: ClientSpectrum;
+      ready: ClientPlayer[];
+      proposedValue: number;
+    }
+  | { state: 'round-completed'; spectrums: ClientSpectrum[]; current: ClientSpectrum }
+  | { state: 'results'; spectrums: ClientSpectrum[] };
+
+export interface ClientSpectrum {
+  id: string;
+  left: string;
+  right: string;
+  correctValue?: number;
+  submittedValue?: number;
+  prompt?: string;
+  assigned: ClientPlayer;
+}
+
+export interface ClientPlayer {
+  id: string;
+  name: string;
+}
+
+export type ServerSyncPayload = {
+  you: ClientPlayer;
+  state: ClientGameState;
+  players: ClientPlayer[];
+  code: string;
+};
+
+export type ServerSync = {
+  type: 'sync';
+  payload: ServerSyncPayload;
+};
+
+export type ServerMessage = ServerSync;
+
+export function isSyncMessage(message: any): message is ServerSync {
+  return message.type === 'sync' && 'payload' in message;
+}
