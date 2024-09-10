@@ -38,11 +38,8 @@ jobs:
         with:
           node-version: "v20.11.0"
 
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-
-      - name: Build project
-        run: npm run build
+      - name: Build server
+        run: cd server && npm ci && npm run build
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -82,7 +79,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          context: .
+          context: ./server
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
