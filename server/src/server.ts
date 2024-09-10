@@ -5,14 +5,13 @@ import process from 'process';
 import { wss } from './websocket';
 
 async function main() {
-  const DIRECT_WS_API_PORT = '8082';
+  const PORT = process.env['PORT'] ?? '8082';
   const expressWsApp = express();
-  const httpWsServer = http.createServer(expressWsApp);
-
   expressWsApp.use(express.static('static'));
 
-  const runningHttpWsServer = httpWsServer.listen(DIRECT_WS_API_PORT, async () => {
-    console.log(`🚀 Websocket Direct API server ready at http://localhost:${DIRECT_WS_API_PORT}`);
+  const httpWsServer = http.createServer(expressWsApp);
+  const runningHttpWsServer = httpWsServer.listen(PORT, async () => {
+    console.log(`🚀 Server ready at http://0.0.0.0:${PORT}`);
   });
   runningHttpWsServer.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket as any, head, socket => {

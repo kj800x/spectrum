@@ -1,38 +1,42 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import './App.css';
-import { ClientMessage, isSyncMessage, ServerSyncPayload } from './protocol';
-import { Connection } from './states/Connection';
-import { Lobby } from './states/Lobby';
-import { GameInitializing } from './states/GameInitializing';
-import { RoundCompleted } from './states/RoundCompleted';
-import { Results } from './states/Results';
-import { RoundPlaying } from './states/RoundPlaying';
-import { Debug } from './components/Debug';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import "./App.css";
+import { ClientMessage, isSyncMessage, ServerSyncPayload } from "./protocol";
+import { Connection } from "./states/Connection";
+import { Lobby } from "./states/Lobby";
+import { GameInitializing } from "./states/GameInitializing";
+import { RoundCompleted } from "./states/RoundCompleted";
+import { Results } from "./states/Results";
+import { RoundPlaying } from "./states/RoundPlaying";
+import { Debug } from "./components/Debug";
 
 function useConnection() {
   const [connection, setConnection] = useState<WebSocket | null>(null);
-  const [syncPayload, setSyncPayload] = useState<ServerSyncPayload | null>(null);
+  const [syncPayload, setSyncPayload] = useState<ServerSyncPayload | null>(
+    null
+  );
 
   useEffect(() => {
     const connect = () => {
-      const ws = new WebSocket(`ws://${window.location.hostname}:8082`);
+      const ws = new WebSocket(
+        `ws://${window.location.hostname}:${window.location.port}`
+      );
       ws.onopen = () => {
-        console.log('connected');
+        console.log("connected");
         setConnection(ws);
       };
       ws.onclose = () => {
-        console.log('disconnected');
+        console.log("disconnected");
         setConnection(null);
       };
-      ws.onmessage = event => {
-        console.log('message', event.data);
+      ws.onmessage = (event) => {
+        console.log("message", event.data);
         try {
           const message = JSON.parse(event.data);
           if (isSyncMessage(message)) {
             setSyncPayload(message.payload);
           }
         } catch (e) {
-          console.error('failed to parse message', e);
+          console.error("failed to parse message", e);
         }
       };
     };
@@ -50,28 +54,34 @@ function useConnection() {
   const actions = useMemo(() => {
     return {
       createRoom({ nickname }: { nickname: string }) {
-        sendMessage({ type: 'create-room', nickname });
+        sendMessage({ type: "create-room", nickname });
       },
       joinRoom({ code, nickname }: { code: string; nickname: string }) {
-        sendMessage({ type: 'join-room', code, nickname });
+        sendMessage({ type: "join-room", code, nickname });
       },
       startGame() {
-        sendMessage({ type: 'start-game' });
+        sendMessage({ type: "start-game" });
       },
-      submitPrompt({ spectrumId, prompt }: { spectrumId: string; prompt: string }) {
-        sendMessage({ type: 'submit-prompt', spectrumId, prompt });
+      submitPrompt({
+        spectrumId,
+        prompt,
+      }: {
+        spectrumId: string;
+        prompt: string;
+      }) {
+        sendMessage({ type: "submit-prompt", spectrumId, prompt });
       },
       proposeValue({ value }: { value: number }) {
-        sendMessage({ type: 'propose-value', value });
+        sendMessage({ type: "propose-value", value });
       },
       readyUp() {
-        sendMessage({ type: 'ready-up' });
+        sendMessage({ type: "ready-up" });
       },
       clearReady() {
-        sendMessage({ type: 'clear-ready' });
+        sendMessage({ type: "clear-ready" });
       },
       proceed() {
-        sendMessage({ type: 'proceed' });
+        sendMessage({ type: "proceed" });
       },
     };
   }, [sendMessage]);
@@ -100,7 +110,7 @@ function App() {
   }
 
   switch (syncPayload.state.state) {
-    case 'lobby':
+    case "lobby":
       return (
         <Lobby
           syncPayload={syncPayload}
@@ -109,7 +119,7 @@ function App() {
           }}
         />
       );
-    case 'initializing': {
+    case "initializing": {
       return (
         <GameInitializing
           syncPayload={syncPayload}
@@ -119,7 +129,7 @@ function App() {
         />
       );
     }
-    case 'round-playing': {
+    case "round-playing": {
       return (
         <RoundPlaying
           syncPayload={syncPayload}
@@ -135,7 +145,7 @@ function App() {
         />
       );
     }
-    case 'round-completed': {
+    case "round-completed": {
       return (
         <RoundCompleted
           syncPayload={syncPayload}
@@ -145,7 +155,7 @@ function App() {
         />
       );
     }
-    case 'results': {
+    case "results": {
       return <Results syncPayload={syncPayload} />;
     }
     default:

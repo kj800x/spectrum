@@ -2,8 +2,7 @@
   "name": "spectrum-server",
   "private": true,
   "dependencies": {
-    "express": "4.19.2",
-    "spectrum-common": "file:../common",
+    "express": "4.20.0",
     "ws": "8.18.0"
   },
   "devDependencies": {
