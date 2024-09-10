@@ -15,7 +15,7 @@ function useConnection() {
 
   useEffect(() => {
     const connect = () => {
-      const ws = new WebSocket('ws://localhost:8082');
+      const ws = new WebSocket(`ws://${window.location.hostname}:8082`);
       ws.onopen = () => {
         console.log('connected');
         setConnection(ws);

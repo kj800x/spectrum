@@ -1,5 +1,6 @@
-import { Debug } from '../components/Debug';
-import { ServerSyncPayload } from '../protocol';
+import { Spectrum } from '../components/Spectrum';
+import { bandsForTargetNumber, score } from '../components/util';
+import { RoundCompletedState, ServerSyncPayload } from '../protocol';
 
 interface Props {
   syncPayload: ServerSyncPayload;
@@ -7,9 +8,20 @@ interface Props {
 }
 
 export function RoundCompleted({ syncPayload, onProceed }: Props) {
+  const state = syncPayload.state as RoundCompletedState;
+  const currentSpectrum = state.current;
+
   return (
     <div>
-      <h1>Round Completed</h1>
+      <Spectrum
+        readonly={true}
+        spectrum={currentSpectrum}
+        bands={bandsForTargetNumber(currentSpectrum.correctValue!)}
+        value={currentSpectrum.submittedValue!}
+        score={score(currentSpectrum.correctValue!, currentSpectrum.submittedValue!)}
+      />
+
+      <h2>Round Complete</h2>
 
       <button
         onClick={() => {
@@ -18,8 +30,6 @@ export function RoundCompleted({ syncPayload, onProceed }: Props) {
       >
         Proceed
       </button>
-
-      <Debug>{syncPayload}</Debug>
     </div>
   );
 }

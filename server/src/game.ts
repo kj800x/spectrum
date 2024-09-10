@@ -191,6 +191,54 @@ class Lobby {
     this.sync();
   }
 
+  removePlayer(player: Player) {
+    const index = this.players.indexOf(player);
+    if (index !== -1) {
+      this.players.splice(index, 1);
+      player.lobby = undefined;
+    }
+
+    switch (this.state.state) {
+      case "initializing": {
+        this.state.spectrums = this.state.spectrums.filter(spectrum => !spectrum.prompt && spectrum.assigned === player)
+        // If all prompts are submitted, start the game
+        if (this.state.spectrums.every(spectrum => spectrum.prompt)) {
+          this.state = {
+            state: 'round-playing',
+            spectrums: this.state.spectrums,
+            current: this.state.spectrums[0]!,
+            ready: [],
+            proposedValue: 0.5,
+          };
+        }
+        break;
+      }
+      case "round-playing": {
+        const index = this.state.ready.indexOf(player);
+        if (index !== -1) {
+          this.state.ready.splice(index, 1);
+
+          if (this.state.ready.length === this.players.length - 1) {
+            this.state.current.submittedValue = this.state.proposedValue;
+            this.state = {
+              state: 'round-completed',
+              spectrums: this.state.spectrums,
+              current: this.state.current,
+            };
+          }
+        }
+        break;
+      }
+      case "round-completed":
+      case "results":
+      case "lobby": {
+        // No need to do anything special when a player disconnects at this point
+      }
+    }
+
+    this.sync();
+  }
+
   startGame() {
     if (this.state.state !== 'lobby') {
       throw new Error('Game already started');
@@ -306,6 +354,17 @@ class Lobby {
   }
 }
 
+// A string of characters, excluding any characters that are easily confused with each other
+const CODE_POOL = 'ABCDEFGHJKLMNPQRSTVWXYZ';
+
+function randomCode() {
+  let code = '';
+  for (let i = 0; i < 4; i++) {
+    code += CODE_POOL[Math.floor(Math.random() * CODE_POOL.length)];
+  }
+  return code;
+}
+
 class LobbyManager {
   lobbies: Lobby[];
 
@@ -325,10 +384,7 @@ class LobbyManager {
     let code: string;
     do {
       // TODO: Better code generation that doesn't require a loop or generate look-similar codes.
-      code = Math.random()
-        .toString(36)
-        .substring(9)
-        .toUpperCase();
+      code = randomCode();
     } while (this.lobbyExists(code));
 
     const lobby = new Lobby(code);

@@ -7,6 +7,12 @@ export const wss = new ws.Server({ noServer: true });
 type HydratedConnection = ws & { player?: Player };
 
 wss.on('connection', (connection: HydratedConnection) => {
+  connection.on('close', () => {
+    if (connection.player && connection.player.lobby) {
+      connection.player.lobby.removePlayer(connection.player);
+    }
+  });
+
   connection.on('message', (message: any) => {
     let parsed: any;
     try {

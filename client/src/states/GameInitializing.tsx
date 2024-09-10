@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { InitializingState, ServerSyncPayload } from '../protocol';
+import { Spectrum } from '../components/Spectrum';
 
 interface Props {
   syncPayload: ServerSyncPayload;
@@ -29,14 +30,29 @@ export function GameInitializing({ syncPayload, onSubmitPrompt }: Props) {
 
   return (
     <div>
-      <p>
-        On a scale from {spectrum.left} to {spectrum.right}, what is{' '}
-        {(spectrum.correctValue! * 100).toFixed(0)}% {spectrum.right}?
-      </p>
+      <Spectrum
+        spectrum={spectrum}
+        readonly={true}
+        value={spectrum.correctValue!}
+        onValueChange={() => {
+          // unused
+        }}
+      />
 
-      <label>
-        Answer: <input value={answer} onChange={e => setAnswer(e.target.value)}></input>
-      </label>
+      <h1 style={{ fontSize: 32 }}>
+        <label>
+          Clue:{' '}
+          <input
+            style={{ fontSize: 32, maxWidth: '81vw' }}
+            value={answer}
+            onChange={e => {
+              setAnswer(e.target.value);
+            }}
+          ></input>
+        </label>
+      </h1>
+
+      <br />
       <button
         disabled={!answer}
         onClick={() => {

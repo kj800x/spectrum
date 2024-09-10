@@ -1,11 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
 import './index.css';
-// import { ClientMessage, ServerSync } from './protocol';
+import App from './App.tsx';
+// import { DebugSpectrum } from './components/DebugSpectrum.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    {/* <DebugSpectrum /> */}
     <App />
   </StrictMode>
 );
