@@ -38,6 +38,12 @@ jobs:
         with:
           node-version: "v20.11.0"
 
+      - name: Build client
+        run: cd client && npm ci && npm run build
+
+      - name: Copy client build to server
+        run: cp -r client/dist server/static
+
       - name: Build server
         run: cd server && npm ci && npm run build
 

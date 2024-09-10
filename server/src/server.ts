@@ -9,6 +9,8 @@ async function main() {
   const expressWsApp = express();
   const httpWsServer = http.createServer(expressWsApp);
 
+  expressWsApp.use(express.static('static'));
+
   const runningHttpWsServer = httpWsServer.listen(DIRECT_WS_API_PORT, async () => {
     console.log(`🚀 Websocket Direct API server ready at http://localhost:${DIRECT_WS_API_PORT}`);
   });
